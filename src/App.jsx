@@ -39,6 +39,19 @@ function App() {
     setIsListening(!isListening);
   };
 
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(transcript);
+      alert("Copied to clipboard!");
+    } catch (err) {
+      alert("Failed to copy.");
+    }
+  };
+
+  const handleReset = () => {
+    setTranscript('');
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
       <h1 className="text-3xl font-bold text-blue-600 mb-6">Voice to Text AI App</h1>
@@ -50,14 +63,30 @@ function App() {
         placeholder="Speak and your words will appear here..."
       />
 
-      <button
-        onClick={handleToggleListening}
-        className={`mt-4 px-6 py-2 rounded text-white text-lg transition ${
-          isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
-        }`}
-      >
-        {isListening ? 'Stop Listening' : 'Start Listening'}
-      </button>
+      <div className="flex flex-wrap gap-4 mt-4">
+        <button
+          onClick={handleToggleListening}
+          className={`px-6 py-2 rounded text-white text-lg transition ${
+            isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+          }`}
+        >
+          {isListening ? 'Stop Listening' : 'Start Listening'}
+        </button>
+
+        <button
+          onClick={handleCopy}
+          className="px-6 py-2 bg-blue-500 hover:bg-blue-600 text-white text-lg rounded"
+        >
+          Copy Text
+        </button>
+
+        <button
+          onClick={handleReset}
+          className="px-6 py-2 bg-gray-500 hover:bg-gray-600 text-white text-lg rounded"
+        >
+          Reset
+        </button>
+      </div>
     </div>
   );
 }
