@@ -1,35 +1,65 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useRef } from 'react';
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [transcript, setTranscript] = useState('');
+  const [isListening, setIsListening] = useState(false);
+  const recognitionRef = useRef(null);
+
+  const handleToggleListening = () => {
+    if (!('webkitSpeechRecognition' in window || 'SpeechRecognition' in window)) {
+      alert('Your browser does not support Speech Recognition.');
+      return;
+    }
+
+    if (!recognitionRef.current) {
+      const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+      const recognition = new SpeechRecognition();
+      recognition.continuous = true;
+      recognition.interimResults = true;
+      recognition.lang = 'en-US';
+
+      recognition.onresult = (event) => {
+        let text = '';
+        for (let i = event.resultIndex; i < event.results.length; ++i) {
+          text += event.results[i][0].transcript;
+        }
+        setTranscript(text);
+      };
+
+      recognition.onend = () => setIsListening(false);
+      recognitionRef.current = recognition;
+    }
+
+    if (isListening) {
+      recognitionRef.current.stop();
+    } else {
+      recognitionRef.current.start();
+    }
+
+    setIsListening(!isListening);
+  };
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HM
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center px-4">
+      <h1 className="text-3xl font-bold text-blue-600 mb-6">Voice to Text AI App</h1>
+
+      <textarea
+        value={transcript}
+        readOnly
+        className="w-full max-w-xl h-48 p-4 border border-gray-300 rounded-md shadow resize-none text-lg"
+        placeholder="Speak and your words will appear here..."
+      />
+
+      <button
+        onClick={handleToggleListening}
+        className={`mt-4 px-6 py-2 rounded text-white text-lg transition ${
+          isListening ? 'bg-red-500 hover:bg-red-600' : 'bg-green-500 hover:bg-green-600'
+        }`}
+      >
+        {isListening ? 'Stop Listening' : 'Start Listening'}
+      </button>
+    </div>
+  );
 }
 
-export default App
+export default App;
